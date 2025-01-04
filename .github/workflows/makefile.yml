@@ -8,7 +8,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm
     
     steps:
       - uses: actions/checkout@v4
@@ -22,10 +21,12 @@ jobs:
           ./bootstrap-vitasdk.sh
           ./install-all.sh
 
-      - name: Build main.c -> eboot.bin
-        run: make
+      - name: Build
+        run: |
+          ls
+          make
 
       - uses: actions/upload-artifact@v4
         with:
           name: out
-          path: eboot.bin
+          path: /
