@@ -18,8 +18,6 @@ jobs:
           cd vdpm
           ./bootstrap-vitasdk.sh
           ./install-all.sh
-          export VITASDK=/usr/local/vitasdk
-          export PATH=$VITASDK/bin:$PATH
 
       - name: Build
         run:
