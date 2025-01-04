@@ -14,16 +14,15 @@ jobs:
 
       - name: setup
         run: |
-          export VITASDK=/usr/local/vitasdk
-          export PATH=$VITASDK/bin:$PATH
           git clone https://github.com/vitasdk/vdpm
           cd vdpm
           ./bootstrap-vitasdk.sh
           ./install-all.sh
+          export VITASDK=/usr/local/vitasdk
+          export PATH=$VITASDK/bin:$PATH
 
       - name: Build
-        run: |
-          ls
+        run:
           make
 
       - uses: actions/upload-artifact@v4
