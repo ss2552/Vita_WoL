@@ -1,0 +1,31 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup
+        run: |
+          export VITASDK=/usr/local/vitasdk
+          export PATH=$VITASDK/bin:$PATH
+          git clone https://github.com/vitasdk/vdpm
+          cd vdpm
+          ./bootstrap-vitasdk.sh
+          ./install-all.sh
+
+      - name: Build main.c -> eboot.bin
+        run: make
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: out
+          path: eboot.bin
