@@ -5,7 +5,7 @@ LINK_LIBS = -lSceKernel_stub -lSceIofilemgr_stub -lSceIofilemgrForDriver_stub -l
 all: eboot.bin
 
 eboot.bin: main.c
-	arm-vita-eabi-gcc -Wl,-q -Wall -O3 -I$(VITASDK)/include -L$(VITASDK)/lib $^ -lc $(LINK_LIBS) -o $@
-	arm-vita-eabi-strip -g $<
-	vita-elf-create $< $@
-	vita-make-fself $@ $<
+	arm-vita-eabi-gcc -Wl,-q -Wall -O3 -I$(VITASDK)/include -L$(VITASDK)/lib main.c -lc $(LINK_LIBS) -o main.elf
+	arm-vita-eabi-strip -g main.elf
+	vita-elf-create main.elf main.velf
+	vita-make-fself main.velf eboot.bin
