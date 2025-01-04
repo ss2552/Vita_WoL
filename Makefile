@@ -1,48 +1,39 @@
-PHONY := all package
+#
+# Copyright (c) 2015 Sergi Granell (xerpi)
+# based on Cirne's vita-toolchain test Makefile
+#
 
-CC := arm-vita-eabi-gcc
-STRIP := arm-vita-eabi-strip
+TARGET = Vita_WoL
+OBJS := main.o
 
-PROJECT_TITLE := Vita_WoL
-PROJECT_TITLEID := VWOL00001
+LIBS = -lc -lSceKernel_stub -lSceIofilemgr_stub -lSceIofilemgrForDriver_stub -lSceNet_stub -lSceSysmodule_stub -lSceCommonDialog_stub
 
-PROJECT := Vita_WoL
-CFLAGS += -Wl,-q -I../common
+PREFIX  = arm-vita-eabi
+CC      = $(PREFIX)-gcc
+READELF = $(PREFIX)-readelf
+OBJDUMP = $(PREFIX)-objdump
+CFLAGS  = -Wl,-q -Wall -O3 -I$(VITASDK)/include -L$(VITASDK)/lib
+ASFLAGS = $(CFLAGS)
 
-SRC_C := main.c
+all: $(TARGET).velf
 
-OBJ_DIRS := $(addprefix out/, $(dir src))
-OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o))
+%.velf: %.elf
+	$(PREFIX)-strip -g $<
+	vita-elf-create $< $@ > /dev/null
 
-LIBS += -SceIofilemgr_stub -SceIofilemgrForDriver_stub -SceNet_stub -SceSysmodule_stub -SceCommonDialog_stub
+$(TARGET).elf: $(OBJS)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-all: package
+clean:
+	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS)
 
-package: $(PROJECT).vpk
+copy: $(TARGET).velf
+	@cp $(TARGET).velf ~/shared/vitasample.elf
+	@echo "Copied!"
 
-$(PROJECT).vpk: eboot.bin param.sfo
-	vita-pack-vpk -s param.sfo -b eboot.bin \
-		--add sce_sys/icon0.png=sce_sys/icon0.png \
-		--add sce_sys/livearea/contents/bg.png=sce_sys/livearea/contents/bg.png \
-		--add sce_sys/livearea/contents/startup.png=sce_sys/livearea/contents/startup.png \
-		--add sce_sys/livearea/contents/template.xml=sce_sys/livearea/contents/template.xml \
-	$(PROJECT).vpk
+run: $(TARGET).velf
+	@sh run_homebrew_unity.sh $(TARGET).velf
 
-eboot.bin: $(PROJECT).velf
-	vita-make-fself $(PROJECT).velf eboot.bin
-
-param.sfo:
-	vita-mksfoex -s TITLE_ID="VWOL00001" "Vita_WoL" param.sfo
-
-$(PROJECT).velf: $(PROJECT).elf
-	$(STRIP) -g $<
-	vita-elf-create $< $@
-
-$(PROJECT).elf: $(OBJS)
-	$(CXX) $^ $(LIBS) -o $@
-
-$(OBJ_DIRS):
-	mkdir -p $@
-	
-out/%.o : src/%.c | $(OBJ_DIRS)
-	arm-vita-eabi-gcc -c $(CFLAGS) -o $@ $<
+send: $(TARGET).velf
+	curl -T $(TARGET).velf ftp://$(PSVITAIP):1337/cache0:/
+	@echo "Sent."
