@@ -1,5 +1,9 @@
 #include <vitasdk.h>
-// SceIofilemgr_stub SceIofilemgrForDriver_stub SceNet_stub SceSysmodule_stub
+#include <stdio.h>>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 #define PORT 9
 #define MAGIC_BUFFER 102 // 6+(6*16)
@@ -17,7 +21,7 @@ int user_msg_dialog(const SceChar8 *msg){
 	DialogParam.mode = SCE_MSG_DIALOG_MODE_USER_MSG;
 	DialogParam.userMsgParam = &DialogUserMessageParam;
 	DialogUserMessageParam.buttonType = SCE_MSG_DIALOG_BUTTON_TYPE_OK;
-	DialogUserMessageParam.msg = &msg;
+	DialogUserMessageParam.msg = msg;
 
 	sceMsgDialogInit(&DialogParam);
 	
@@ -31,7 +35,7 @@ int user_msg_dialog(const SceChar8 *msg){
 	return sceMsgDialogClose();
 }
 
-int sys_msg_dialog(const int sysMsgType){
+int sys_msg_dialog(int sysMsgType){
 	SceMsgDialogParam DialogParam;
 	SceMsgDialogSystemMessageParam DialogSystemMessageParam;
 
@@ -53,8 +57,10 @@ int sys_msg_dialog(const int sysMsgType){
 	return sceMsgDialogClose();
 }
 
-int error_msg_dialog(const char msg){
-	user_msg_dialog(&msg);
+int error_msg_dialog(char msg){
+	char s_msg[sizeof msg];
+	sprintf(s_msg, "%s", msg);
+	user_msg_dialog(&s_msg);
 	return sceKernelExitProcess(-1);
 }
 
@@ -91,6 +97,6 @@ int main(){
 	sceNetSendto(s, &payload_buffer_address, MAGIC_BUFFER, 0, (SceNetSockaddr *)&serv_addr, sizeof serv_addr);
 	sceNetSocketClose(s);
 	
-	NetTerm(); sceNetTerm(); sceSysmoduleUnloadModule(SCE_SYSMODULE_NET);
+	sceNetTerm(); sceSysmoduleUnloadModule(SCE_SYSMODULE_NET);
 	return 0;
 }
